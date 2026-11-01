@@ -147,6 +147,17 @@ explicitly within scope. Keep native adoption and live-server acceptance separat
    interpreter, package versions and relevant source hashes without installing
    replacements. Preserve the original policy, baseline failures and complete
    fixture dependency closure, including helper snapshots and descriptor files.
+   Keep installed-library and scratch locations separate from the Git-owned
+   publication source; source delivery does not install or activate the skill.
+   Declare the exported dependency closure, including every selected definition
+   and required loader input. Preserve selected definition ASTs if formatting is
+   regenerated. Bind exported fixture manifests to their materialized bytes and
+   paths, not merely an archive hash or an earlier experiment receipt. Use the
+   exact supported mutation-mode identifiers; require the intended assertion
+   failures with zero setup errors rather than accepting a successful no-op.
+   Exercise the exported closure in a fresh output tree without the original
+   scratch inputs. Preserve incomplete or failed exports as separate evidence;
+   packaging acceptance is not current-product or native-integration acceptance.
    Invoke the verified interpreter directly with `-I -B -X utf8` and an explicit
    owned test entrypoint. Use synthetic identities, a credential-free environment
    and `httpx.MockTransport` through an explicit `httpx.Client` with
