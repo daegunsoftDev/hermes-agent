@@ -1,0 +1,94 @@
+name: Stateful context offline example
+
+# workflow_dispatch is discoverable only after this file reaches the repository's
+# default branch. Publishing it on a feature branch is not CI execution.
+on:
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Full immutable commit SHA already published to this repository
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: stateful-context-offline-${{ inputs.expected_sha }}
+  cancel-in-progress: false
+
+jobs:
+  offline:
+    if: github.repository == 'daegunsoftDev/hermes-agent' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Validate the dispatch scope
+        id: guard
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]
+          [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+
+      - name: Check out the immutable source
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.expected_sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Read back the checked-out commit
+        id: commit
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Select the example's Python version
+        id: python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14.7'
+          check-latest: false
+          allow-prereleases: false
+
+      - name: Prepare a separate example-only environment
+        id: install
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/stateful-ci-venv"
+          "$RUNNER_TEMP/stateful-ci-venv/bin/python" -m pip install --disable-pip-version-check --no-input \
+            'openai==2.24.0' 'httpx==0.28.1' 'PyYAML==6.0.3'
+
+      - name: Check the workflow's static contract
+        id: static
+        run: |
+          "$RUNNER_TEMP/stateful-ci-venv/bin/python" -I -B -X utf8 \
+            skills/autonomous-ai-agents/hermes-agent/examples/stateful-context/test_workflow_contract.py
+
+      - name: Run the pinned offline source-subset example
+        id: behavior
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/stateful-results"
+          "$RUNNER_TEMP/stateful-ci-venv/bin/python" -I -B -X utf8 \
+            skills/autonomous-ai-agents/hermes-agent/examples/stateful-context/run.py \
+            --output "$RUNNER_TEMP/stateful-results"
+
+      - name: Retain only synthetic example evidence for one day
+        id: artifacts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: stateful-context-offline-${{ inputs.expected_sha }}
+          path: ${{ runner.temp }}/stateful-results/
+          retention-days: 1
+          if-no-files-found: ignore
