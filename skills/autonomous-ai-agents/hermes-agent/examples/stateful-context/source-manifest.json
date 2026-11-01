@@ -1,0 +1,239 @@
+{
+  "original_source_revision": "d923a5eb487a17c0a68801bba9ef0f56c81040a8",
+  "sdk_versions": {
+    "openai": "2.24.0",
+    "httpx": "0.28.1"
+  },
+  "code_sha256": {
+    "context_binding.py": "320526b820fbf3468464d1852ddf14f0280f1d2e32073a59ac954f8c0e5d7282",
+    "context_tests.py": "0970799aa02026bc3d275544f333b4fa108dcd0d2f9bfcf432e9db4279f73a46",
+    "exercise.py": "a81f67d75560431aa4372362d4ba3281b0552a4a57d5d46e2695b0fb11286862",
+    "extended.py": "4af30ed3b6c49e103b90caf501ba7e04fec610477fd06eb6b711797b665011ba",
+    "public_connection.py": "33f2839fdcbeb7fac606d8cebf86324fee74059033722a955a26d22154650548",
+    "retry_control.py": "825619531fc822d0bc834614d27dda47cb2d94800fa799119260d9df08604aa4",
+    "run.py": "1dede76f0f772d073aa93f11f7becfd4b8c5b0ebd25eec99a6da3bab1090b45d",
+    "source_defs.py": "0dae8cc13d0ddb3006def7f7f0b438ec082aad6a19940477a462a5d40a955983",
+    "validation.py": "80a0bae43ca66e5cdc7adfec09f3f5d36506636e1f2ee8acfb5f8a7d5f85ed46",
+    "snapshot/agent/auxiliary_client.py": "35ddec15c13d287b338b64bff3951bb8648d2a433d79b02b914bb56c415104ca",
+    "snapshot/agent/chat_completion_helpers.py": "932fb1820f48a08af4614cea64d64c493d12e600263aaf722ce3e6a2b123f10e",
+    "snapshot/agent/client_lifecycle.py": "d852bcc595db46f5ed90b5f161eec2f96e59e1496bd826a82680da2195b8db19",
+    "snapshot/agent/process_bootstrap.py": "ddf1c75adbbec35e54de70414ecb8fd7b5111dbd5a353731c89a22c806c247a9",
+    "snapshot/agent/turn_api_error.py": "c40c4940b083f6053831f56881930ca3d53e80811f44583ef07cc2d14e187556",
+    "snapshot/gateway/config.py": "869321b817b4d9af4cbf49b81b99c7a92ad18a1767443860b2b179898af281c7",
+    "snapshot/gateway/run_turn_runner.py": "51a797cccebcb012a616ece949c4b03715ecd51a768b9cdc30606f249309a4bd",
+    "snapshot/gateway/session.py": "0a5f4b2f8f643f3226b226f1fcff0a89393be70ce0d9c8945de426bc35108622",
+    "snapshot/gateway/session_identity.py": "afb844c53e6728ff1615a34b7256d8d10227343c76c78a67503386701f5ea55d",
+    "snapshot/gateway/turn_context.py": "fd190b26c13bf09af0cf7df48bdd9d4568d4f0c21a0848180671c28508b80715",
+    "candidate-context/agent/auxiliary_client.py": "9e7381e73781bafac464ea8b7fd2e3d4afc917ace4a552473ab39df65585c00a",
+    "candidate-context/gateway/run_turn_runner.py": "f785b2c35f0e279b42c46a11670e7105bd42c70e3143e73f4c918f974f694f12",
+    "candidate/agent/auxiliary_client.py": "df5291f64f02e28f150c8dee64d6feaa2a2c6161c31c3e9c87ba5adc6a85f2cf",
+    "candidate/agent/client_lifecycle.py": "beda372a50f109239f7539f78719ec9efb63e0437040821e4dfe7bfbdd600116",
+    "candidate/agent/process_bootstrap.py": "478de3ffc693b2b16bd7fc7d45a9ec6b1cae84c585102595da454b8b81c21919",
+    "candidate/agent/turn_api_error.py": "bfd4e0e93a7b35c0bae90a104dc4de6c910ffe0eddfd3b93196f494e1e1fe723",
+    "candidate/gateway/config.py": "869321b817b4d9af4cbf49b81b99c7a92ad18a1767443860b2b179898af281c7",
+    "candidate/gateway/run_turn_runner.py": "51a797cccebcb012a616ece949c4b03715ecd51a768b9cdc30606f249309a4bd",
+    "candidate/gateway/session.py": "0a5f4b2f8f643f3226b226f1fcff0a89393be70ce0d9c8945de426bc35108622",
+    "candidate/gateway/session_identity.py": "afb844c53e6728ff1615a34b7256d8d10227343c76c78a67503386701f5ea55d",
+    "candidate/gateway/turn_context.py": "fd190b26c13bf09af0cf7df48bdd9d4568d4f0c21a0848180671c28508b80715"
+  },
+  "fixture_provenance": {
+    "snapshot/agent/client_lifecycle.py": {
+      "definitions": [
+        "_close_request_openai_client",
+        "_create_request_openai_client"
+      ],
+      "original_file_sha256": "4e8a80556184c415256934c50e6191b840910867fe68d36efc263440ea7b7dd2",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "snapshot/agent/auxiliary_client.py": {
+      "definitions": [
+        "_create_openai_client",
+        "_create_with_progress_once",
+        "_get_cached_client"
+      ],
+      "original_file_sha256": "d86ad24c75ec8d9cd153595f58fede8c321774adaf71b650d380cafd257cfae2",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "snapshot/agent/chat_completion_helpers.py": {
+      "definitions": [
+        "_dispatch_nonstreaming_api_request",
+        "_open_chat_stream"
+      ],
+      "original_file_sha256": "d7b982ddeabe7bb02cb92fd905d213ecba3b2d21672e249510f760fff27ec8a1",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "snapshot/agent/process_bootstrap.py": {
+      "definitions": [
+        "build_keepalive_http_client"
+      ],
+      "original_file_sha256": "ca25e5426ee1923451a0dccaee34362d3b6872258da7366d1eae503217407b2a",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "snapshot/agent/turn_api_error.py": {
+      "definitions": [
+        "ApiErrorVerdict",
+        "handle_api_error"
+      ],
+      "original_file_sha256": "63f855e65161a308b3a118086271f581fc6a7d0aef36171f1b20e5f9f3ce82d5",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "snapshot/gateway/config.py": {
+      "definitions": [
+        "Platform"
+      ],
+      "original_file_sha256": "0b0afcd42648fcea652c19655d899427672d3cebf29cc8dd3d5539780f45631a",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "snapshot/gateway/session_identity.py": {
+      "definitions": [
+        "RoutingIdentity"
+      ],
+      "original_file_sha256": "3f6d05e4d5eed6bfc6e9bacd7db9a28939ee55ed03124864128a6ec15497c0ab",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "snapshot/gateway/session.py": {
+      "definitions": [
+        "SessionSource",
+        "_canonical_participant",
+        "_session_key_namespace",
+        "build_session_key"
+      ],
+      "original_file_sha256": "6ed3889888349158278547e7a1754dca3ce41e80f433e93c391b01b9080db195",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "snapshot/gateway/turn_context.py": {
+      "definitions": [
+        "TurnContext"
+      ],
+      "original_file_sha256": "0ead1dd84316f79eb3809d60941577b7cf0c82f120e9c9a49fe946f59f6a6f10",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "snapshot/gateway/run_turn_runner.py": {
+      "definitions": [
+        "_CachedAgentLookup",
+        "_build_fresh_agent",
+        "_lookup_cached_agent",
+        "_resolve_turn_agent",
+        "_skip_context_files"
+      ],
+      "original_file_sha256": "6ec879a91aa09765515a69368c886d1ce4d3174b159868c966e8740e9cf1b347",
+      "ast_equivalent": true,
+      "candidate": false
+    },
+    "candidate/agent/client_lifecycle.py": {
+      "definitions": [
+        "_close_request_openai_client",
+        "_create_request_openai_client"
+      ],
+      "original_file_sha256": "6018c713d35cf5f467992858f7cea51a7d315bc76f0fa87a4f9446f5f1f36d9e",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate/agent/auxiliary_client.py": {
+      "definitions": [
+        "_create_openai_client",
+        "_create_with_progress_once",
+        "_get_cached_client"
+      ],
+      "original_file_sha256": "6a69d9c09614bab49a77d76a834368eac1b92fecf0a016cee22d69f6878d3503",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate/agent/process_bootstrap.py": {
+      "definitions": [
+        "build_keepalive_http_client"
+      ],
+      "original_file_sha256": "e30983c83948b4adb2eb8fe54948a2118f57a496142f1a79bbded7e436cbefae",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate/agent/turn_api_error.py": {
+      "definitions": [
+        "ApiErrorVerdict",
+        "handle_api_error"
+      ],
+      "original_file_sha256": "9fadbea85cafd0a19700ef4ba037f84e29118cde20d9987326d53512869f63cb",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate/gateway/config.py": {
+      "definitions": [
+        "Platform"
+      ],
+      "original_file_sha256": "0b0afcd42648fcea652c19655d899427672d3cebf29cc8dd3d5539780f45631a",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate/gateway/session_identity.py": {
+      "definitions": [
+        "RoutingIdentity"
+      ],
+      "original_file_sha256": "3f6d05e4d5eed6bfc6e9bacd7db9a28939ee55ed03124864128a6ec15497c0ab",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate/gateway/session.py": {
+      "definitions": [
+        "SessionSource",
+        "_canonical_participant",
+        "_session_key_namespace",
+        "build_session_key"
+      ],
+      "original_file_sha256": "6ed3889888349158278547e7a1754dca3ce41e80f433e93c391b01b9080db195",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate/gateway/turn_context.py": {
+      "definitions": [
+        "TurnContext"
+      ],
+      "original_file_sha256": "0ead1dd84316f79eb3809d60941577b7cf0c82f120e9c9a49fe946f59f6a6f10",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate/gateway/run_turn_runner.py": {
+      "definitions": [
+        "_CachedAgentLookup",
+        "_build_fresh_agent",
+        "_lookup_cached_agent",
+        "_resolve_turn_agent",
+        "_skip_context_files"
+      ],
+      "original_file_sha256": "6ec879a91aa09765515a69368c886d1ce4d3174b159868c966e8740e9cf1b347",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate-context/agent/auxiliary_client.py": {
+      "definitions": [
+        "_get_cached_client"
+      ],
+      "original_file_sha256": "e53da8743093abbe320d7053e306bee896bcc861414751dabe73e2813ffe01c4",
+      "ast_equivalent": true,
+      "candidate": true
+    },
+    "candidate-context/gateway/run_turn_runner.py": {
+      "definitions": [
+        "_CachedAgentLookup",
+        "_build_fresh_agent",
+        "_lookup_cached_agent",
+        "_resolve_turn_agent",
+        "_skip_context_files"
+      ],
+      "original_file_sha256": "5da948a16669c6c304cbe37d3198a6e453327033e11a68337f85253f601df498",
+      "ast_equivalent": true,
+      "candidate": true
+    }
+  },
+  "native_activation": false,
+  "private_receipts_included": false,
+  "fixture_bundle_sha256": "6800e008b975d049194e1f314710efe5d0407a0ae03779f4350ffe5e58cbba8f"
+}
