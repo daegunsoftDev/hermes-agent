@@ -10,7 +10,6 @@ forwarders. Symbols tests patch on ``run_agent`` (``cleanup_vm`` /
 from __future__ import annotations
 
 import contextlib
-import contextvars
 import json
 import logging
 import math
@@ -31,6 +30,8 @@ from agent.error_classifier import (
     _extract_status_code)
 from agent.sdk_transform_bypass import bypass_chat_sdk_request_transform
 from agent.errors import EmptyStreamError
+from agent.model_call_policy import (ModelCallPolicyHalt, main_call, main_method, main_request,
+    _context_thread_target, _relay_stream_identity)
 from agent.chat_completion_local import _streams_llamacpp, stale_giveup
 from agent.chat_completion_headers import _chat_completion_capturing_headers
 from agent.chat_completion_stream_monitor import StreamingWaitMonitor, StreamLifetimeExceeded
@@ -73,12 +74,6 @@ _FALLBACK_EXHAUSTED_COOLDOWN_S = 5.0
 # outer retry loop (up to ~3 attempts x backoff, well under 60s) so an outage doesn't
 # double traffic every attempt, while later turns re-arm automatically.
 _STREAM_5XX_PROBE_WINDOW_S = 60.0
-
-
-def _context_thread_target(callback):
-    """Bind a no-argument thread target to the caller's ContextVars."""
-    context = contextvars.copy_context()
-    return lambda: context.run(callback)
 
 
 def _join_worker_for_relay_teardown(worker, *, label: str) -> None:
@@ -757,6 +752,7 @@ def _bedrock_converse_call(api_kwargs: dict, *, stream: bool, on_stream_denied=N
     return finish(raw_response)
 
 
+@main_call
 def _dispatch_nonstreaming_api_request(agent, api_kwargs: dict, *, make_client):
     """Run one non-streaming LLM request for the active api_mode and return it.
 
@@ -2456,13 +2452,6 @@ def _is_sse_connection_error(exc: BaseException) -> bool:
     return any(phrase in err_lower for phrase in _SSE_CONN_PHRASES)
 
 
-def _relay_stream_identity(agent, name_default: str) -> dict:
-    """``session_id``/``name``/``model_name`` kwargs for ``relay_llm.stream``."""
-    return {"session_id": str(getattr(agent, "session_id", "") or ""),
-        "name": str(getattr(agent, "provider", "") or name_default),
-        "model_name": str(getattr(agent, "model", "") or "")}
-
-
 def _relay_stream_metadata(agent, api_mode: str) -> dict:
     call_role = ("delegated" if getattr(agent, "is_subagent", False)
                  else "fallback" if int(getattr(agent, "_fallback_index", 0) or 0) > 0 else "primary")
@@ -2566,6 +2555,7 @@ class _BedrockStream:
             fire(value)
         return _on
 
+    @main_method
     def _open_stream(self, next_api_kwargs: dict[str, Any]):
         return _bedrock_converse_call(dict(next_api_kwargs), stream=True, on_stream_denied=self._fall_back_to_converse)
 
@@ -2627,7 +2617,8 @@ class _BedrockStream:
                     raise
                 streamed_response = None
             self.result["response"] = stream.final_response or streamed_response
-        except Exception as e:
+        except (Exception, ModelCallPolicyHalt) as e:
+            logger.debug("Bedrock stream failed", exc_info=True)
             self.result["error"] = e
         finally:
             if stream is not None:
@@ -2940,6 +2931,7 @@ class _StreamingCall(StreamingWaitMonitor):
             finish_reason = "stop"
         return usage, finish_reason
 
+    @main_method
     def _open_chat_stream(self, stream_kwargs: dict[str, Any]):
         # Native Gemini rejects OpenAI's usage-streaming extension; so do strict endpoints that
         # already 4xx'd on it this session (``_stream_options_unsupported``, see #9705).
@@ -3396,6 +3388,7 @@ class _StreamingCall(StreamingWaitMonitor):
         from agent.anthropic_adapter import normalize_stream_usage, sanitize_anthropic_kwargs
         accumulator = relay_llm.AnthropicStreamAccumulator()
 
+        @main_request(self.agent)
         def _open_anthropic_stream(next_api_kwargs: dict[str, Any]):
             final_kwargs = dict(next_api_kwargs)
             sanitize_anthropic_kwargs(final_kwargs, log_prefix=getattr(self.agent, "log_prefix", ""))
@@ -3759,6 +3752,8 @@ class _StreamingCall(StreamingWaitMonitor):
     def _run_call(self):
         try:
             self._call()
+        except ModelCallPolicyHalt as exc:
+            self.result["error"] = exc
         finally:
             self._call_done.set()
 

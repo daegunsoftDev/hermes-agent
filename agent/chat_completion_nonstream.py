@@ -75,6 +75,8 @@ class _NonStreamRequest:
                 watchdog_context_token = watchdog_state_var.set(self.codex_watchdog_state)
             self.result["response"] = h._dispatch_nonstreaming_api_request(
                 self.agent, self.api_kwargs, make_client=self._make_client)
+        except h.ModelCallPolicyHalt as exc:
+            self.result["error"] = exc
         except Exception as e:
             # Our own force-close caused this error: swallow it, the main
             # thread raises InterruptedError (#6600). Retirement logs at info

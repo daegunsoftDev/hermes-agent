@@ -56,7 +56,8 @@ def test_auxiliary_deny_makes_zero_provider_calls(monkeypatch):
     create.assert_not_called()
     assert policy_payload["call_kind"] == "auxiliary"
     assert policy_payload["task_id"] == "slice-1"
-    assert policy_payload["mission_id"] == "mission-root"
+    # An unsupported environment hint is not a host-owned mission identity.
+    assert policy_payload["mission_id"] == ""
     assert policy_payload["auxiliary_task"] == "title_generation"
     assert policy_payload["provider"] == "custom"
     assert policy_payload["model"] == "configured-model"

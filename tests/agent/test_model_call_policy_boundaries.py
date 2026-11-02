@@ -241,7 +241,9 @@ def test_turn_loop_settles_typed_denial_before_provider_recovery(monkeypatch, wr
     monkeypatch.setattr(loop, "perform_api_call", provider_step)
     monkeypatch.setattr(loop, "handle_api_error", recovery)
     try:
-        result = loop._run_api_retry_loop(SimpleNamespace(), state)
+        result = loop._run_api_retry_loop(
+            SimpleNamespace(thinking_callback=None), state
+        )
     except ModelCallPolicyHalt:
         pytest.fail("policy rejection escaped the terminal turn boundary")
     assert result["completed"] is False

@@ -8,6 +8,8 @@ in neither chain (undocumented, shifting allow-list): main provider or explicit
 ``auxiliary.<task>.provider`` only. HTTP 402 in call_llm() falls through the chain.
 """
 
+from agent.model_call_policy import (ModelCallPolicyDenied, ModelCallPolicyHalt, auxiliary_call,
+    auxiliary_async_call, _release_sync_semaphore_after_stream)
 import contextlib
 import contextvars
 import functools
@@ -2609,6 +2611,7 @@ def _relay_auxiliary_metadata(
     }
 
 
+@auxiliary_call
 def _relay_sync_completion(
     client: Any, kwargs: dict[str, Any], *, provider: str | None = None,
     api_mode: str | None = None, create: Callable[[dict[str, Any]], Any] | None = None,
@@ -2648,6 +2651,7 @@ def _relay_sync_completion(
         raise
 
 
+@auxiliary_async_call
 async def _relay_async_completion(
     client: Any, kwargs: dict[str, Any], *, provider: str | None = None,
     api_mode: str | None = None, create: Callable[[dict[str, Any]], Any] | None = None,
@@ -2678,6 +2682,7 @@ async def _relay_async_completion(
         raise
 
 
+@auxiliary_call
 def _relay_sync_stream(
     client: Any, kwargs: dict[str, Any], *, provider: str | None = None, api_mode: str | None = None
 ) -> Any:
@@ -7945,23 +7950,12 @@ def call_llm(
             semaphore = None
             return _release_sync_semaphore_after_stream(response, stream_semaphore)
         return response
+    except ModelCallPolicyHalt as exc:
+        raise ModelCallPolicyDenied(exc.action, exc.message) from None
     finally:
         if latency_info is not None:
             latency_info["summary_generation_ms"] = _elapsed_ms(request_started_at)
         if semaphore is not None:
-            semaphore.release()
-
-
-def _release_sync_semaphore_after_stream(stream: Any, semaphore: threading.BoundedSemaphore):
-    """Release a permit only after a streaming response is consumed or closed."""
-    try:
-        yield from stream
-    finally:
-        try:
-            close = getattr(stream, "close", None)
-            if callable(close):
-                close()
-        finally:
             semaphore.release()
 
 
@@ -8218,6 +8212,8 @@ async def async_call_llm(
                 max_tokens=max_tokens, tools=tools, timeout=timeout, extra_body=extra_body,
                 reasoning_config=reasoning_config, route_info=route_info,
             )
+    except ModelCallPolicyHalt as exc:
+        raise ModelCallPolicyDenied(exc.action, exc.message) from None
     finally:
         if semaphore is not None:
             semaphore.release()

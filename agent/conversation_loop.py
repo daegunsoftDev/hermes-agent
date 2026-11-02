@@ -44,6 +44,8 @@ from agent.turn_scripted_prelude import Prelude, play_prelude
 # skewed phase mid-turn.
 from agent.turn_api_call import handle_api_interrupt, nous_rate_limit_guard, perform_api_call
 from agent.turn_api_error import handle_api_error
+from agent.turn_api_call import stop_thinking_spinner
+from agent.model_call_policy import ModelCallPolicyHalt, policy_failure_result
 from agent.turn_api_request import build_api_request
 from agent.turn_failure_copy import FAILED_TURN_DISPLAY_KIND, OPEN_TURN_TAIL_ROLES, failed_turn_notice, site_copy
 from agent.turn_final_response import finish_text_response
@@ -1591,7 +1593,11 @@ def _run_api_retry_loop(agent, s: _LoopState) -> Optional[dict[str, Any]]:
         except InterruptedError:
             if _run_phase(handle_api_interrupt, agent, s).action == "break":
                 return None
-        except Exception as api_error:
+        except (Exception, ModelCallPolicyHalt) as api_error:
+            if (result := policy_failure_result(api_error, s.messages, s.api_call_count)) is not None:
+                s.thinking_spinner = stop_thinking_spinner(agent, s.thinking_spinner)
+                return result
+            logger.debug("Provider call failed before recovery", exc_info=True)
             _ae = _run_phase(handle_api_error, agent, s, api_error=api_error)
             if _ae.action == "return":
                 return _ae.result
