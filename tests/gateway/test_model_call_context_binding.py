@@ -245,3 +245,30 @@ def test_exception_in_turn_restores_the_context_token(make_turn, agent):
         boundary_epoch=7,
     )
     assert "conversation_key" not in payload(agent)
+
+
+def test_characterization_real_owning_sqlite_epoch_is_bound(make_turn, agent):
+    import sqlite3
+    from hermes_state import SessionDB
+
+    seen = []
+    turn, _fixture_db = make_turn(lambda: seen.append(payload(agent)) or {})
+    db = SessionDB(db_path=turn._ctx.source._identity.store_path)
+    try:
+        db.create_session("physical-session", "discord")
+        # Seed durable fixture data, then exercise the real SessionDB read contract.
+        with sqlite3.connect(db.db_path) as connection:
+            connection.execute(
+                "INSERT INTO conversation_generations (source, session_key, generation) VALUES (?, ?, ?)",
+                ("discord", KEY, 7),
+            )
+        turn._runner._session_db = SimpleNamespace(_db=db)
+        turn.run_sync()
+        assert projection(seen[0]) == dict(
+            profile="routed-profile",
+            workspace="/synthetic/project",
+            conversation_key=KEY,
+            boundary_epoch=7,
+        )
+    finally:
+        db.close()

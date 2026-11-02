@@ -54,3 +54,33 @@ def test_context_fields_and_explicit_unknowns_survive(epoch):
 def test_context_epoch_rejects_bool_coercion_and_negative_values(epoch):
     with pytest.raises((TypeError, ValueError)):
         _policy_payload(REQUEST, runtime_context=owned(boundary_epoch=epoch))
+
+
+def test_characterization_registered_kwargs_guard_preserves_legacy_and_context(
+    monkeypatch,
+):
+    from hermes_cli import plugins
+    from hermes_cli.plugins import PluginContext, PluginManager, PluginManifest
+    from hermes_cli.model_call_policy import enforce_pre_model_call_policy
+
+    manager = PluginManager()
+    manager._discovered = True
+    monkeypatch.setattr(plugins, "get_plugin_manager", lambda: manager)
+    context = PluginContext(PluginManifest(name="context-fixture"), manager)
+    seen = []
+
+    def guard(*, profile, **fields):
+        seen.append(
+            (profile, fields.get("conversation_key"), fields.get("boundary_epoch"))
+        )
+        return {"action": "allow"}
+
+    context.register_hook("pre_model_call_policy", guard)
+    enforce_pre_model_call_policy(REQUEST, profile="process-default")
+    enforce_pre_model_call_policy(
+        REQUEST, profile="process-default", runtime_context=owned()
+    )
+    assert seen == [
+        ("process-default", None, None),
+        ("routed-profile", "synthetic:shared-thread", 7),
+    ]

@@ -183,6 +183,38 @@ def _resolution_failure_reply(exc: Exception, platform: Platform) -> tuple[str, 
     return t("gateway.errors.no_credentials"), auth_permanent, False
 
 
+def _model_call_boundary_epoch(runner, ctx, identity):
+    """Read only this routing identity's durable peer generation; uncertainty is None."""
+    from pathlib import Path
+    try:
+        facade = getattr(runner, "_session_db", None)
+        db = getattr(facade, "_db", facade)
+        path = getattr(db, "db_path", None)
+        if path is None or Path(path).resolve() != identity.store_path.resolve():
+            return None
+        row = db.get_session(ctx.session_id)
+        source = row.get("source") if isinstance(row, dict) else None
+        if type(source) is not str or not source:
+            return None
+        value = db.latest_conversation_boundary(ctx.session_key, source)
+    except Exception:
+        logger.debug("Model policy durable boundary is unavailable", exc_info=True)
+        return None
+    return value if type(value) is int and value >= 0 else None
+
+
+def _turn_model_call_context(runner, ctx, policy):
+    from agent.model_call_context import freeze_model_call_context
+    from gateway.session_identity import identity_of
+    identity = identity_of(ctx.source)
+    key = getattr(ctx, "session_key", None)
+    if identity is None or type(key) is not str or not key:
+        return None
+    return freeze_model_call_context(profile=identity.runtime_profile,
+        workspace=getattr(policy, "cwd", None), conversation_key=key,
+        boundary_epoch=_model_call_boundary_epoch(runner, ctx, identity))
+
+
 class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):
     """Per-turn collaborator carrying ``GatewayRunner._run_agent_inner``'s tool-progress callbacks."""
 
@@ -1221,6 +1253,9 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):
                     raise
             else:
                 scope.enter_context(api_policy_scope())
+                from agent.model_call_context import model_call_context
+                scope.enter_context(model_call_context(
+                    _turn_model_call_context(self._runner, self._ctx, policy)))
                 bind_turn_workspace(policy, self._ctx.session_id)
                 result = self._run_sync_scoped()
             from gateway.session_results import execution_result

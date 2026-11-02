@@ -1,6 +1,7 @@
 """Native provider adapters for the shared, opt-in model-policy engine."""
 
 from __future__ import annotations
+from agent.model_call_context import capture_model_call_context
 import contextvars
 import threading
 from contextlib import contextmanager
@@ -73,6 +74,7 @@ def _main_metadata(agent, request):
         return None
     return {
         "call_kind": "conversation",
+        "runtime_context": capture_model_call_context(),
         **_legacy_metadata(),
         "model": request.get("model") or getattr(agent, "model", ""),
         "provider": getattr(agent, "provider", ""),
@@ -122,6 +124,7 @@ def _aux_metadata(client, request, kwargs):
     context = _RELAY_AUX_CALL_CONTEXT.get() or {}
     return {
         "call_kind": "auxiliary",
+        "runtime_context": capture_model_call_context(),
         **_legacy_metadata(),
         "auxiliary_task": str(context.get("task") or ""),
         "provider": kwargs.get("provider") or context.get("provider") or "",

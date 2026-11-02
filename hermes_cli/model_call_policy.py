@@ -10,6 +10,7 @@ semantics.
 
 from __future__ import annotations
 
+from agent.model_call_context import freeze_model_call_context
 import json
 import logging
 from typing import Any, Dict, Iterable, Mapping
@@ -198,6 +199,10 @@ def _policy_payload(
         "max_output_tokens": max_output_tokens,
         "middleware_trace": list(context.pop("middleware_trace", []) or []),
     }
+    # Only the host Python argument is authoritative; request metadata is never consumed.
+    runtime_context = context.pop("runtime_context", None)
+    if runtime_context is not None:
+        payload.update(freeze_model_call_context(**runtime_context))
     return payload
 
 
